@@ -6,7 +6,20 @@ import (
 
 	"github.com/SebasNaranjoT/GoWeb.git/models"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
+
+type Request struct {
+	Id          int
+	Name        string  `json:"name" validate:"required"`
+	Quantity    int     `json:"quantity" validate:"required"`
+	CodeValue   string  `json:"code_value" validate:"required"`
+	IsPublished bool    `json:"is_published"`
+	Expiration  string  `json:"expiration" validate:"required"`
+	Price       float64 `json:"price" validate:"required"`
+}
+
+var lastId int = 567
 
 func Ping(ctx *gin.Context) {
 	ctx.String(200, "pong")
@@ -72,4 +85,28 @@ func ProdcutsGreaterThanPriceGt(ctx *gin.Context) {
 			"products": selectedProducts,
 		})
 	}
+}
+
+func CreateProduct(ctx *gin.Context) {
+	var request Request
+
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusNotAcceptable, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	validate := validator.New()
+	
+	if err := validate.Struct(&request); err != nil {
+		ctx.String(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+	lastId++
+	request.Id = lastId
+
+	models.NewProduct(request.Id, request.Name, request.Quantity, request.CodeValue, request.IsPublished, request.Expiration, request.Price)
+	ctx.JSON(http.StatusOK, request)
+
 }

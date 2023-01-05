@@ -30,5 +30,6 @@ func main() {
 	server.GET("/products", handlers.Products)
 	server.GET("/products/:id", handlers.GetProductById)
 	server.GET("/products/search", handlers.ProdcutsGreaterThanPriceGt)
+	server.POST("/products/new", handlers.CreateProduct)
 	server.Run()
 }
